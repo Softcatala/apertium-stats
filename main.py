@@ -71,9 +71,6 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Headers',
                         'accept, cache-control, origin, x-requested-with, x-file-name, content-type')
 
-
-
-
 class StatsHandler(BaseHandler):
 
     def get_date(self):
@@ -102,7 +99,6 @@ class StatsHandler(BaseHandler):
         except Exception as e:
             self.write_error(500, explanation=str(e))
             return
-
 
         self.sendResponse({
             'date'  : dt,
@@ -180,6 +176,10 @@ class ApertiumStats(dict):
             sleft = self.langs.get(left, left)
             sright = self.langs.get(right, right)
             key = sleft+'-'+sright
+
+        if key == '-':
+            key = 'unknown'
+
         self['langstats'].setdefault(key, 0)
         self['langstats'][key] += 1
 
