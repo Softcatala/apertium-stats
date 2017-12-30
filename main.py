@@ -117,6 +117,8 @@ class StatsHandler(BaseHandler):
             for line in content.readlines():
                 elems = line.split(' ')
                 stats.inc()
+                if stats.ignoreRow(elems):
+                    continue
                 stats.add_pair(elems[2])
                 stats.add_source(elems[4], elems[6])
             return stats
@@ -192,6 +194,13 @@ class ApertiumStats(dict):
 
         self['srcstats'].setdefault(key, 0)
         self['srcstats'][key] += 1
+
+    # Some log rows are broken
+    def ignoreRow(self, elems):
+        # Levante sometimes sends spaces in the langpair (Traduir del castellà al valencià instead of spa|cat)
+        if elems[2] == 'Traduir':
+            return True
+        return False
 
 
 if __name__ == '__main__':
