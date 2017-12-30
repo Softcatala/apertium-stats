@@ -117,7 +117,7 @@ class StatsHandler(BaseHandler):
             for line in content.readlines():
                 elems = line.split(' ')
                 stats.inc()
-                if stats.ignoreRow(elems):
+                if stats.should_ignore_row(elems):
                     continue
                 stats.add_pair(elems[2])
                 stats.add_source(elems[4], elems[6])
@@ -186,17 +186,23 @@ class ApertiumStats(dict):
         self['langstats'][key] += 1
 
     def add_source(self, key, referer):
+        key = self.fix_key(key, referer)
+
+        self['srcstats'].setdefault(key, 0)
+        self['srcstats'][key] += 1
+
+    def fix_key(self, key, referer):
+        # During some months, softcatala.org was using softvalencia's key
         if key in ['traductor@softcatala.org', 'traductor@softvalencia.org']:
             if "softvalencia" in referer:
                 key = 'traductor@softvalencia.org'
             else:
                 key = 'traductor@softcatala.org'
 
-        self['srcstats'].setdefault(key, 0)
-        self['srcstats'][key] += 1
+        return key
 
     # Some log rows are broken
-    def ignoreRow(self, elems):
+    def should_ignore_row(self, elems):
         # Levante sometimes sends spaces in the langpair (Traduir del castellà al valencià instead of spa|cat)
         if elems[2] == 'Traduir':
             return True
